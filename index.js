@@ -27,6 +27,7 @@ app.set('view engine', 'ejs')
 app.set('views', path.resolve(__dirname, 'views'))
 
 const env = process.env
+
 const awsConfig = {
   region: env.AWS_REGION || 'us-east-1',
   accessKeyId: env.AWS_ACCESS_KEY_ID || 'key', // DynamoDB Local doesn't care what the key/secret are
@@ -62,6 +63,8 @@ const describeTable = promisify(dynamodb.describeTable.bind(dynamodb))
 const getItem = promisify(docClient.get.bind(docClient))
 const putItem = promisify(docClient.put.bind(docClient))
 const deleteItem = promisify(docClient.delete.bind(docClient))
+
+const batchWrite = promisify(docClient.batchWrite.bind(docClient))
 
 app.use(errorhandler())
 app.use('/assets', express.static(path.join(__dirname, '/public')))
@@ -458,30 +461,68 @@ app.get('/tables/:TableName/items/:key', (req, res, next) => {
     .catch(next)
 })
 
-app.put('/tables/:TableName/add-item', bodyParser.json(), (req, res, next) => {
-  const TableName = req.params.TableName
-  describeTable({ TableName })
-    .then(description => {
-      const params = {
-        TableName,
-        Item: req.body
+// decommissioned from GUI in favor of batch-write - still available as an API endpoint
+app.put('/tables/:TableName/add-item', bodyParser.text(), (req, res) => {
+  async function addItem(table, item){
+      try {
+          let docClientResponse = await putItem({
+              TableName: table,
+              Item: JSON.parse(item), // bodyParser.json will not trigger catch statement on malformed JSON which can happen as it is user input
+              ReturnValues: 'ALL_OLD'
+          });
+          res.json({
+              newItem: docClientResponse
+          });
+      } catch (error){
+          res.status(400).json({
+              error: error.toString()
+          });
       }
+  }
 
-      return putItem(params).then(response => {
-        const Key = extractKey(req.body, description.Table.KeySchema)
-        const params = {
-          TableName,
-          Key
+  addItem(req.params.TableName, req.body);
+})
+
+app.put('/tables/:TableName/batch-write', bodyParser.text(), (req, res) => {
+    try {
+        let putRequests = [];
+        let items = JSON.parse(req.body);
+
+        if(!Array.isArray(items)){
+            items = [items];
         }
-        return getItem(params).then(response => {
-          if (!response.Item) {
-            return res.status(404).send('Not found')
-          }
-          return res.json(Key)
+
+        items.forEach(item => {
+            putRequests.push({
+                PutRequest: {
+                    Item: item
+                }
+            });
         })
-      })
-    })
-    .catch(next)
+
+        var params = {
+          RequestItems: {
+            [req.params.TableName]: putRequests
+          }
+        };
+        
+        batchWriteItems(params);
+    } catch (error){
+        res.status(400).json({
+            error: error.toString()
+        });
+    }
+
+  async function batchWriteItems(params){
+      try {
+          let docClientResponse = await batchWrite(params);
+          res.json(docClientResponse);
+      } catch (error){
+          res.status(400).json({
+              error: error.toString()
+          });
+      }
+  }
 })
 
 app.put(
