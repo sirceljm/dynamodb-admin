@@ -7,8 +7,8 @@
 <body class='container-fluid'>
   <header>
     <ol class='breadcrumb'>
-      <a class='breadcrumb-item' href='/'>Tables</a>
-      <a class='breadcrumb-item' href='/tables/<%= TableName %>'><%= TableName %></a>
+      <a class='breadcrumb-item' href='<%= urlPrefix %>/'>Tables</a>
+      <a class='breadcrumb-item' href='<%= urlPrefix %>/tables/<%= TableName %>'><%= TableName %></a>
       <% if (Item.id) { %>
         <span class='breadcrumb-item'>
           <%= Item.id %>
@@ -36,8 +36,8 @@
             throw new Error()
           }
         }).then((json) => {
-          if (document.location.pathname.endsWith('/add-item')) {
-            const urlPart1 = document.location.pathname.replace('/add-item', '')
+          if (document.location.pathname.endsWith('<%= urlPrefix %>/add-item')) {
+            const urlPart1 = document.location.pathname.replace('<%= urlPrefix %>/add-item', '')
             const param = encodeURIComponent(Object.values(json).join(','))
 
             window.location = `${urlPart1}/items/${param}`
@@ -90,7 +90,7 @@
           method: 'delete'
         }).then((response) => {
           if (response.ok) {
-            window.location = `/tables/<%= TableName %>`
+            window.location = `<%= urlPrefix %>/tables/<%= TableName %>`
           }
         }).catch((error) => {
           console.error(error)

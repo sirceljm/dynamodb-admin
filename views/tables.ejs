@@ -6,19 +6,19 @@
 <body class='container-fluid'>
   <header>
     <ol class="breadcrumb">
-      <a class="breadcrumb-item active" href="/">Tables</a>
+      <a class="breadcrumb-item active" href="<%= urlPrefix %>/">Tables</a>
     </ol>
   </header>
   <main>
     <script>
     function deleteTable (TableName) {
-      fetch(`/tables/${TableName}`, {
+      fetch(`<%= urlPrefix %>/tables/${TableName}`, {
         method: 'delete'
       }).then((response) => {
         if (!response.ok) {
           throw new Error
         }
-        window.location.href = '/'
+        window.location.href = '<%= urlPrefix %>/'
       }).catch(() => {
         window.alert('There was an error when attempting to delete the table.')
       })
@@ -27,10 +27,10 @@
     <ul class="list-group">
       <% for(var i = 0; i < data.length; i++) { %>
         <li class="list-group-item">
-          <a href='/tables/<%= data[i].TableName %>'>
+          <a href='<%= urlPrefix %>/tables/<%= data[i].TableName %>'>
             <%= data[i].TableName %>
           </a>
-          <a href="/" onClick="deleteTable('<%= data[i].TableName %>')" class="tag tag-danger tag-pill pull-xs-right" style="margin-left: 8px;">
+          <a href="<%= urlPrefix %>/" onClick="deleteTable('<%= data[i].TableName %>')" class="tag tag-danger tag-pill pull-xs-right" style="margin-left: 8px;">
             Delete
           </a>
           <span class="tag tag-default tag-pill pull-xs-right">
@@ -40,7 +40,7 @@
       <% } %>
     </ul>
     <div style="margin-top: 12px;">
-      <a href='/create-table' class="btn btn-primary">
+      <a href='<%= urlPrefix %>/create-table' class="btn btn-primary">
         Create table
       </a>
     </div>

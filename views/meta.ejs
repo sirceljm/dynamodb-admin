@@ -7,22 +7,22 @@
 <body class='container-fluid'>
   <header>
     <ol class='breadcrumb'>
-      <a class='breadcrumb-item' href='/'>Tables</a>
+      <a class='breadcrumb-item' href='<%= urlPrefix %>/'>Tables</a>
       <a class='breadcrumb-item active'><%= Table.TableName %></a>
     </ol>
 
     <ul class='nav nav-tabs'>
       <li class='nav-item'>
-        <a class='nav-link' href='/tables/<%= Table.TableName %>'>
+        <a class='nav-link' href='<%= urlPrefix %>/tables/<%= Table.TableName %>'>
           Scan (<%= Table.ItemCount %>)
         </a>
       </li><li class="nav-item">
-        <a class="nav-link" href="/tables/<%= Table.TableName %>/get">
+        <a class="nav-link" href="<%= urlPrefix %>/tables/<%= Table.TableName %>/get">
           Get
         </a>
       </li>
       <li class='nav-item'>
-        <a class='nav-link active' href='/tables/<%= Table.TableName %>/meta'>Meta</a>
+        <a class='nav-link active' href='<%= urlPrefix %>/tables/<%= Table.TableName %>/meta'>Meta</a>
       </li>
     </ul>
   </header>
@@ -37,13 +37,13 @@
   </main>
   <script>
       document.querySelector('#deleteTable').addEventListener('click', () => {
-          fetch('/tables/<%= Table.TableName %>', {
+          fetch('<%= urlPrefix %>/tables/<%= Table.TableName %>', {
               method: 'delete'
           }).then((response) => {
               if (!response.ok) {
                   throw new Error
               }
-              window.location.href = '/'
+              window.location.href = '<%= urlPrefix %>/'
           }).catch(() => {
               window.alert('There was an error when attempting to delete the table.')
           })
