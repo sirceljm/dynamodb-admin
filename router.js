@@ -51,6 +51,7 @@ const getItem = promisify(docClient.get.bind(docClient));
 const putItem = promisify(docClient.put.bind(docClient));
 const deleteItem = promisify(docClient.delete.bind(docClient));
 const deleteTable = promisify(dynamodb.deleteTable.bind(dynamodb));
+const batchWrite = promisify(docClient.batchWrite.bind(docClient));
 
 router.get("/", (req, res) => {
     dynamodb.listTables({}, (error, data) => {
@@ -144,12 +145,12 @@ router.get("/tables/:TableName/get", (req, res, next) => {
     if (req.query.hash) {
         if (req.query.range) {
             return res.redirect(
-                `/tables/${TableName}/items/${req.query.hash}${encodeURIComponent(
+                `${req.app.get("dynamodb-admin-urlPrefix")}/tables/${TableName}/items/${req.query.hash}${encodeURIComponent(
                     ","
                 )}${req.query.range}`
             );
         } else {
-            return res.redirect(`/tables/${TableName}/items/${req.query.hash}`);
+            return res.redirect(`${req.app.get("dynamodb-admin-urlPrefix")}/tables/${TableName}/items/${req.query.hash}`);
         }
     }
 
@@ -470,6 +471,67 @@ router.get("/tables/:TableName/items/:key", (req, res, next) => {
             });
         })
         .catch(next);
+});
+
+// decommissioned from GUI in favor of batch-write - still available as an API endpoint
+router.put("/tables/:TableName/add-item", bodyParser.text(), (req, res) => {
+    putItem({
+        TableName: req.params.TableName,
+        Item: JSON.parse(req.body), // bodyParser.json will not trigger catch statement on malformed JSON which can happen as it is user input
+        ReturnValues: "ALL_OLD"
+    })
+        .then(response => {
+            res.json({
+                newItem: response
+            });
+        })
+        .catch(error => {
+            res.status(400).json({
+                error: error.toString()
+            });
+        });
+});
+
+router.put("/tables/:TableName/batch-write", bodyParser.text(), (req, res) => {
+    try {
+        let putRequests = [];
+        let items = JSON.parse(req.body);
+
+        if(!Array.isArray(items)){
+            items = [items];
+        }
+
+        items.forEach(item => {
+            putRequests.push({
+                PutRequest: {
+                    Item: item
+                }
+            });
+        });
+
+        var params = {
+            RequestItems: {
+                [req.params.TableName]: putRequests
+            }
+        };
+
+        batchWriteItems(params);
+    } catch (error){
+        res.status(400).json({
+            error: error.toString()
+        });
+    }
+
+    function batchWriteItems(params){
+        batchWrite(params)
+            .then(response => {
+                res.json(response);
+            }).catch(error => {
+                res.status(400).json({
+                    error: error.toString()
+                });
+            });
+    }
 });
 
 router.put("/tables/:TableName/add-item", bodyParser.json(), (req, res, next) => {
