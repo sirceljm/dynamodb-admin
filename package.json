@@ -1,6 +1,6 @@
 {
-  "name": "dynamodb-admin",
-  "version": "2.0.2",
+  "name": "@awly/dynamodb-admin",
+  "version": "2.1.0",
   "description": "GUI for DynamoDB. Useful for local development.",
   "main": "index.js",
   "bin": "./bin/dynamodb-admin.js",
@@ -9,18 +9,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aaronshaf/dynamodb-viewer.git"
+    "url": "git+https://github.com/sirceljm/dynamodb-admin.git"
   },
   "keywords": [
     "DynamoDB",
     "Dynamo"
   ],
-  "author": "Aaron Shafovaloff <aaronshaf@gmail.com>",
+  "author": "Matej Šircelj <sircelj.m@gmail.com> (https://github.com/sirceljm/)",
+  "contributors": ["Aaron Shafovaloff <aaronshaf@gmail.com>"],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/aaronshaf/dynamodb-viewer/issues"
+    "url": "https://github.com/sirceljm/dynamodb-admin/issues"
   },
-  "homepage": "https://github.com/aaronshaf/dynamodb-viewer#readme",
+  "homepage": "https://github.com/sirceljm/dynamodb-admin#readme",
   "dependencies": {
     "aws-sdk": "^2.7.27",
     "body-parser": "^1.15.2",
